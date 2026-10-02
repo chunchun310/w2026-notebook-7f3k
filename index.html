@@ -109,7 +109,7 @@ dialog h3 { font-size:16px; margin-bottom:12px; }
 </dialog>
 
 <script id="ledger-data" type="application/json">
-{"entries":[{"id":"f-1","date":"2026-10-02","cat":"food","amount":25.9,"note":"中饭"},{"id":"f-2","date":"2026-10-02","cat":"drink","amount":10,"note":"咖啡"},{"id":"f-4","date":"2026-10-03","cat":"food","amount":18,"note":"早餐燕麦"},{"id":"f-5","date":"2026-10-03","cat":"trans","amount":18,"note":"共享单车骑行卡"},{"id":"f-6","date":"2026-09-30","cat":"daily","amount":90,"note":"剪头发"},{"id":"f-7","date":"2026-10-03","cat":"food","amount":19.46,"note":"夜宵三明治"}],"budgets":{"food":1500,"fun":450,"ai":200,"trans":220,"daily":180,"drink":150,"phone":100,"misc":100},"fixed":[],"balances":{"items":[{"name":"微信小号","amount":144},{"name":"支付宝","amount":0},{"name":"微信大号","amount":3302}],"updated":"2026-10-03","note":"支付宝平时0，坐地铁才转钱"}}
+{"entries":[{"id":"f-1","date":"2026-10-02","cat":"food","amount":25.9,"note":"中饭"},{"id":"f-2","date":"2026-10-02","cat":"drink","amount":10,"note":"咖啡"},{"id":"f-4","date":"2026-10-03","cat":"food","amount":18,"note":"早餐燕麦"},{"id":"f-5","date":"2026-10-03","cat":"trans","amount":18,"note":"共享单车骑行卡"},{"id":"f-6","date":"2026-09-30","cat":"daily","amount":90,"note":"剪头发"},{"id":"f-7","date":"2026-10-03","cat":"food","amount":19.46,"note":"夜宵三明治"}],"budgets":{"food":1500,"fun":450,"ai":200,"trans":220,"daily":180,"drink":150,"phone":100,"misc":100},"fixed":[],"income":[{"date":"2026-10-03","amount":110,"note":"晚上赚的"}],"balances":{"items":[{"name":"微信小号","amount":144},{"name":"支付宝","amount":0},{"name":"微信大号","amount":3302}],"updated":"2026-10-03","note":"支付宝平时0，坐地铁才转钱"}}
 </script>
 
 <script>
@@ -295,13 +295,17 @@ function renderBudgets(t, mo){
   const sl = document.getElementById("saveLine");
   sl.textContent = `本月已花 ¥${spent.toFixed(1)} / 总预算 ¥${totalBudget}，照这个节奏月底能攒 ¥${Math.max(0,totalBudget-spent).toFixed(0)}（目标 ≥600）`;
   sl.style.color = (totalBudget-spent) < 600 && mo === curMonth() ? "#b00020" : "#6b7280";
+  // 收入条
+  const inc = (FILE_DATA.income||[]).filter(e=>e.date.startsWith(mo));
   // 账户余额条
   const bal = FILE_DATA.balances;
   if (bal && mo === curMonth()) {
     const total = bal.items.reduce((a,b)=>a+b.amount,0);
     const tip = document.createElement("div");
     tip.style.cssText = "margin-top:12px;padding-top:10px;border-top:1px dashed #e3e6ee;font-size:12.5px;color:#5a6270;line-height:1.9;";
-    tip.innerHTML = `💰 <b>账户余额</b>（${bal.updated} 更新，合计 <b>¥${total.toFixed(0)}</b>）：` +
+    const incHtml = inc.length ? `💵 <b>本月额外收入</b>：` + inc.map(x=>`${x.date.slice(5)} +¥${x.amount.toFixed(0)}（${x.note}）`).join(" · ") + `，合计 <b style="color:#1e8e3e">+¥${inc.reduce((a,b)=>a+b.amount,0).toFixed(0)}</b><br>` : "";
+    tip.innerHTML = incHtml +
+      `💰 <b>账户余额</b>（${bal.updated} 更新，合计 <b>¥${total.toFixed(0)}</b>）：` +
       bal.items.map(x=>`${x.name} ¥${x.amount.toFixed(0)}`).join(" · ") +
       `<br><span style="color:#a5abb8">${bal.note||""}</span>`;
     sl.after(tip);

@@ -58,6 +58,20 @@ dialog h3 { font-size:16px; margin-bottom:12px; }
 .setrow { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; font-size:13.5px; gap:10px; }
 .setrow input { width:90px; flex:none; padding:6px 8px; }
 .tip { font-size:12px; color:#a5abb8; margin-top:8px; }
+/* ===== 概览仪表盘 ===== */
+.hero { background:linear-gradient(135deg,#4a7df0,#7c5cff); border-radius:16px; padding:18px; color:#fff; margin-bottom:14px; box-shadow:0 4px 16px rgba(74,125,240,.25); }
+.hero .htitle { font-size:13px; opacity:.85; }
+.hero .hbig { font-size:34px; font-weight:bold; margin:4px 0 2px; font-variant-numeric:tabular-nums; }
+.hero .hsub { font-size:12.5px; opacity:.9; }
+.gauges { display:flex; gap:12px; flex-wrap:wrap; margin-top:14px; }
+.gauge { flex:1; min-width:130px; background:rgba(255,255,255,.14); border-radius:12px; padding:10px 12px; }
+.gauge .glabel { font-size:12px; opacity:.85; }
+.gauge .gval { font-size:19px; font-weight:bold; margin:2px 0 6px; font-variant-numeric:tabular-nums; }
+.gbar { height:7px; background:rgba(255,255,255,.25); border-radius:4px; overflow:hidden; }
+.gbar > div { height:100%; border-radius:4px; background:#fff; transition:width .4s; }
+.gnote { font-size:11.5px; opacity:.8; margin-top:5px; }
+.ringwrap { display:flex; align-items:center; gap:10px; }
+canvas.ring { width:96px; height:96px; }
 </style>
 </head>
 <body>
@@ -66,6 +80,13 @@ dialog h3 { font-size:16px; margin-bottom:12px; }
   <div class="subtitle">正式账本 = 本文件本身（微信让本鱼记，直接写进文件）· 在这里手记的账存本机浏览器，自动合并显示</div>
   <div class="banners">
     <div id="banner" class="banner"></div>
+  </div>
+
+  <div class="hero" id="hero">
+    <div class="htitle">💰 本月攒钱进度</div>
+    <div class="hbig" id="heroBig">¥0</div>
+    <div class="hsub" id="heroSub"></div>
+    <div class="gauges" id="gauges"></div>
   </div>
 
   <div class="cards">
@@ -352,10 +373,48 @@ document.getElementById("saveSettings").addEventListener("click", ()=>{
   render();
 });
 
+// ---------- 概览仪表盘 ----------
+function renderHero(t, mo){
+  if (mo !== curMonth()) { document.getElementById("hero").style.display = "none"; return; }
+  document.getElementById("hero").style.display = "";
+  const spent = Object.values(t).reduce((a,b)=>a+b,0);
+  const inc = (FILE_DATA.income||[]).filter(e=>e.date.startsWith(mo)).reduce((a,b)=>a+b.amount,0);
+  const totalBudget = CATS.reduce((a,c)=>a+budgetOf(c.id),0);
+  // 攒钱 = 总预算 - 已花 + 额外收入
+  const saved = totalBudget - spent + inc;
+  const savedPct = Math.max(0, Math.min(saved/totalBudget*100, 100));
+  const now = new Date();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+  const day = mo === CUR.y+"-"+String(CUR.m).padStart(2,"0") ? now.getDate() : daysInMonth;
+  const budgetUsedPct = spent/totalBudget*100;
+  const timePct = day/daysInMonth*100;
+
+  document.getElementById("heroBig").textContent = "¥" + Math.round(saved);
+  document.getElementById("heroSub").textContent =
+    `已花 ¥${spent.toFixed(1)} + 收入 ¥${inc.toFixed(0)} · 月底预计攒下 ¥${Math.round(saved)}（目标 600，${saved>=600?"达成 ✓":"还差 ¥"+(600-saved)+"）"} · 本月过了 ${Math.round(timePct)}%`;
+
+  // 三个仪表：还能花 / 预算消耗 / 收入贡献
+  const canSpend = Math.max(0, totalBudget - spent);
+  const daysLeft = Math.max(1, daysInMonth - day + 1);
+  const gauges = [
+    {label:"🎁 预算还能花", val:`¥${Math.round(canSpend)}`, pct: Math.max(0,100-budgetUsedPct), note:`日均 ¥${Math.round(canSpend/daysLeft)}（剩 ${daysLeft} 天）`},
+    {label:"🔥 预算已消耗", val:`${budgetUsedPct.toFixed(0)}%`, pct: Math.min(budgetUsedPct,100), note: budgetUsedPct > timePct+10 ? `⚠️ 比时间跑快 ${Math.round(budgetUsedPct-timePct)}%` : `时间过了 ${Math.round(timePct)}%，节奏正常`},
+    {label:"💵 额外收入贡献", val:`+¥${Math.round(inc)}`, pct: Math.min(inc/600*100,100), note: inc>0 ? `相当于攒钱目标的 ${Math.round(inc/600*100)}%` : "暂无额外收入"},
+  ];
+  document.getElementById("gauges").innerHTML = gauges.map(g=>`
+    <div class="gauge">
+      <div class="glabel">${g.label}</div>
+      <div class="gval">${g.val}</div>
+      <div class="gbar"><div style="width:${g.pct}%"></div></div>
+      <div class="gnote">${g.note}</div>
+    </div>`).join("");
+}
+
 // ---------- 渲染总入口 ----------
 function render(){
   const mo = curMonth();
   const t = totals(mo);
+  renderHero(t, mo);
   drawPie(t);
   renderLegend(t);
   renderBudgets(t, mo);

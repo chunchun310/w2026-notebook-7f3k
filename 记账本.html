@@ -77,7 +77,7 @@ canvas.ring { width:96px; height:96px; }
 <body>
 <div class="container">
   <h1>📒 记账本</h1>
-  <div class="subtitle">正式账本 = 本文件本身（微信让本鱼记，直接写进文件）· 在这里手记的账存本机浏览器，自动合并显示</div>
+  <div class="subtitle">本页只做看账：流水明细 · 月度占比 · 预算进度（记账在微信喊本鱼，实时更新到这里）</div>
   <div class="banners">
     <div id="banner" class="banner"></div>
   </div>
@@ -91,10 +91,7 @@ canvas.ring { width:96px; height:96px; }
 
   <div class="cards">
     <div class="card">
-      <h2>✏️ 记一笔（临时，永久账在微信喊本鱼记）</h2>
-      <div class="formrow"><input id="amt" type="number" step="0.1" min="0" placeholder="金额 (元)"></div>
-      <div class="formrow"><select id="cat"></select></div>
-      <div class="formrow"><input id="note" placeholder="备注（可留空）"><button class="btn" id="add">入账</button></div>
+      <h2>📜 流水明细 <span style="font-size:12px;color:#a5abb8;font-weight:normal">（记账在微信喊本鱼）</span></h2>
       <div class="summaryline" id="summary"></div>
       <div class="monthsel">月份 <select id="monthSel"></select></div>
       <div class="history" id="history"></div>
@@ -109,7 +106,7 @@ canvas.ring { width:96px; height:96px; }
         </div>
       </div>
       <div class="card">
-        <h2>📊 预算进度 <button class="btn small ghost" id="openSettings">改预算(临时)</button></h2>
+        <h2>📊 预算进度</h2>
         <div class="budgetlist" id="budgets"></div>
         <div class="summaryline" style="margin-top:10px;" id="saveLine"></div>
         <div class="tip">💡 50% 黄 · 80% 橙 · 100% 红。想永久改预算/记固定支出，在微信跟本鱼说。</div>
@@ -330,36 +327,12 @@ function initMonthSel(){
 }
 function curMonth(){ return document.getElementById("monthSel").value; }
 
-// ---------- 记账（本机临时） ----------
-function addEntry(){
-  const amtEl = document.getElementById("amt");
-  const v = parseFloat(amtEl.value);
-  if (!(v>0)) { amtEl.focus(); return; }
-  const now = new Date();
-  const date = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
-  localEntries.push({id:"l-"+Date.now(), date, cat:document.getElementById("cat").value, amount:Math.round(v*100)/100, note:document.getElementById("note").value.trim()});
-  saveLocal();
-  amtEl.value=""; document.getElementById("note").value="";
-  amtEl.focus();
-  const em = date.slice(0,7), sel = document.getElementById("monthSel");
-  if (![...sel.options].some(o=>o.value===em)) {
-    const [y,m] = em.split("-");
-    const o=document.createElement("option"); o.value=em; o.textContent=`${y}年${parseInt(m)}月`;
-    sel.insertBefore(o, sel.firstChild);
-  }
-  sel.value = em;
-  render();
-}
-document.getElementById("add").addEventListener("click", addEntry);
-document.getElementById("amt").addEventListener("keydown", e=>{ if(e.key==="Enter") addEntry(); });
-document.getElementById("note").addEventListener("keydown", e=>{ if(e.key==="Enter") addEntry(); });
-
 // ---------- 删除 ----------
 function delEntry(id){
+  if (!id.startsWith("l-")) { alert("正式账在微信喊本鱼删除"); return; }
   if (!confirm("删除这一笔？")) return;
-  if (id.startsWith("l-")) localEntries = localEntries.filter(e=>e.id!==id);
-  if (!hiddenIds.includes(id)) hiddenIds.push(id);
-  saveLocal(); saveHidden(); render();
+  localEntries = localEntries.filter(e=>e.id!==id);
+  saveLocal(); render();
 }
 
 // ---------- 汇总 ----------
@@ -490,7 +463,7 @@ function openSettings(){
   box.innerHTML = CATS.map(c=>`<div class="setrow"><span>${c.icon} ${c.name}</span><input type="number" min="0" step="10" id="set_${c.id}" value="${budgetOf(c.id)}"></div>`).join("");
   dlg.showModal();
 }
-document.getElementById("openSettings").addEventListener("click", openSettings);
+document.getElementById("openSettings")?.addEventListener("click", openSettings);
 document.getElementById("cancelSettings").addEventListener("click", ()=>document.getElementById("settingsDlg").close());
 document.getElementById("saveSettings").addEventListener("click", ()=>{
   CATS.forEach(c=>{
@@ -554,12 +527,6 @@ function render(){
 
 // ---------- init ----------
 (function init(){
-  const sel = document.getElementById("cat");
-  CATS.forEach(c=>{
-    const o = document.createElement("option");
-    o.value = c.id; o.textContent = `${c.icon} ${c.name}`;
-    sel.appendChild(o);
-  });
   autoFixed();
   initMonthSel();
   render();

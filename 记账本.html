@@ -373,7 +373,7 @@ function drawPie(t){
 function renderLegend(t){
   const total = Object.values(t).reduce((a,b)=>a+b,0);
   const el = document.getElementById("legend");
-  if (total<=0) { el.innerHTML = '<span style="color:#a5abb8">记一笔试试 →</span>'; return; }
+  if (total<=0) { el.innerHTML = '<span style="color:#a5abb8">记账在微信喊本鱼 🐟</span>'; return; }
   const sorted = CATS.filter(c=>t[c.id]>0).sort((a,b)=>t[b.id]-t[a.id]);
   el.innerHTML = sorted.map(c=>{
     const p = (t[c.id]/total*100);

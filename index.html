@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>记账本</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -77,7 +80,7 @@ canvas.ring { width:96px; height:96px; }
 <body>
 <div class="container">
   <h1>📒 记账本</h1>
-  <div class="subtitle">正式账本 = 本文件本身（微信让本鱼记，直接写进文件）· 在这里手记的账存本机浏览器，自动合并显示</div>
+  <div class="subtitle">本页只做看账：流水明细 · 月度占比 · 预算进度（记账在微信喊本鱼，实时更新到这里）</div>
   <div class="banners">
     <div id="banner" class="banner"></div>
   </div>
@@ -91,10 +94,7 @@ canvas.ring { width:96px; height:96px; }
 
   <div class="cards">
     <div class="card">
-      <h2>✏️ 记一笔（临时，永久账在微信喊本鱼记）</h2>
-      <div class="formrow"><input id="amt" type="number" step="0.1" min="0" placeholder="金额 (元)"></div>
-      <div class="formrow"><select id="cat"></select></div>
-      <div class="formrow"><input id="note" placeholder="备注（可留空）"><button class="btn" id="add">入账</button></div>
+      <h2>📜 流水明细 <span style="font-size:12px;color:#a5abb8;font-weight:normal">（记账在微信喊本鱼）</span></h2>
       <div class="summaryline" id="summary"></div>
       <div class="monthsel">月份 <select id="monthSel"></select></div>
       <div class="history" id="history"></div>
@@ -109,7 +109,7 @@ canvas.ring { width:96px; height:96px; }
         </div>
       </div>
       <div class="card">
-        <h2>📊 预算进度 <button class="btn small ghost" id="openSettings">改预算(临时)</button></h2>
+        <h2>📊 预算进度</h2>
         <div class="budgetlist" id="budgets"></div>
         <div class="summaryline" style="margin-top:10px;" id="saveLine"></div>
         <div class="tip">💡 50% 黄 · 80% 橙 · 100% 红。想永久改预算/记固定支出，在微信跟本鱼说。</div>
@@ -129,9 +129,7 @@ canvas.ring { width:96px; height:96px; }
   </div>
 </dialog>
 
-<script id="ledger-data" type="application/json">
-{"entries":[{"id":"f-1","date":"2026-10-02","cat":"food","amount":25.9,"note":"中饭"},{"id":"f-2","date":"2026-10-02","cat":"drink","amount":10,"note":"咖啡"},{"id":"f-4","date":"2026-10-03","cat":"food","amount":18,"note":"早餐燕麦"},{"id":"f-5","date":"2026-10-03","cat":"trans","amount":18,"note":"共享单车骑行卡"},{"id":"f-6","date":"2026-09-30","cat":"daily","amount":90,"note":"剪头发"},{"id":"f-7","date":"2026-10-03","cat":"food","amount":19.46,"note":"夜宵三明治"},{"id":"f-8","date":"2026-10-03","cat":"trans","amount":8,"note":"地铁"},{"id":"f-9","date":"2026-10-03","cat":"daily","amount":10,"note":"水费"},{"id":"f-10","date":"2026-10-03","cat":"daily","amount":2.7,"note":"洗衣机"}],"budgets":{"food":1500,"fun":450,"ai":200,"trans":220,"daily":180,"drink":150,"phone":100,"misc":100},"fixed":[],"income":[{"date":"2026-10-03","amount":110,"note":"晚上赚的"},{"date":"2026-10-03","amount":90,"note":"晚上赚的"}],"balances":{"items":[{"name":"微信小号","amount":144},{"name":"支付宝","amount":0},{"name":"微信大号","amount":3456}],"updated":"2026-10-03","note":"支付宝平时0，坐地铁才转钱"}}
-</script>
+<script id="ledger-data" type="application/json">{"entries": [{"id": "f-1", "date": "2026-10-02", "cat": "food", "amount": 25.9, "note": "中饭"}, {"id": "f-2", "date": "2026-10-02", "cat": "drink", "amount": 10, "note": "咖啡"}, {"id": "f-4", "date": "2026-10-03", "cat": "food", "amount": 18, "note": "早餐燕麦"}, {"id": "f-5", "date": "2026-10-03", "cat": "trans", "amount": 18, "note": "共享单车骑行卡"}, {"id": "f-6", "date": "2026-09-30", "cat": "daily", "amount": 90, "note": "剪头发"}, {"id": "f-7", "date": "2026-10-03", "cat": "food", "amount": 19.46, "note": "夜宵三明治"}, {"id": "f-8", "date": "2026-10-03", "cat": "trans", "amount": 8, "note": "地铁"}, {"id": "f-9", "date": "2026-10-03", "cat": "daily", "amount": 10, "note": "水费"}, {"id": "f-10", "date": "2026-10-03", "cat": "daily", "amount": 2.7, "note": "洗衣机"}, {"id": "f-13", "date": "2026-10-08", "cat": "food", "amount": 21, "note": "中饭", "acct": "大号"}, {"id": "f-11", "date": "2026-10-08", "cat": "drink", "amount": 7.5, "note": "买奶", "acct": "大号"}, {"id": "f-12", "date": "2026-10-08", "cat": "fun", "amount": 15, "note": "B站月度会员扣款", "acct": "大号"}, {"id": "f-14", "date": "2026-10-09", "cat": "food", "amount": 31, "note": "中饭", "acct": "大号"}, {"id": "f-15", "date": "2026-10-09", "cat": "misc", "amount": 8, "note": "快递", "acct": "大号"}, {"id": "f-16", "date": "2026-10-09", "cat": "fun", "amount": 9.9, "note": "健身房次卡", "acct": "大号"}, {"id": "f-17", "date": "2026-10-09", "cat": "food", "amount": 15, "note": "晚饭", "acct": "大号"}, {"id": "f-18", "date": "2026-10-10", "cat": "food", "amount": 18, "note": "早饭", "acct": "大号"}, {"id": "f-19", "date": "2026-10-10", "cat": "fun", "amount": 32, "note": "买游戏", "acct": "大号"}, {"id": "f-20", "date": "2026-10-10", "cat": "food", "amount": 19.6, "note": "中饭", "acct": "大号"}, {"id": "f-21", "date": "2026-10-10", "cat": "drink", "amount": 6, "note": "下午茶", "acct": "大号"}, {"id": "f-22", "date": "2026-10-10", "cat": "trans", "amount": 3, "note": "车充电", "acct": "大号"}, {"id": "f-23", "date": "2026-10-10", "cat": "food", "amount": 20, "note": "晚饭", "acct": "大号"}, {"id": "f-24", "date": "2026-10-10", "cat": "daily", "amount": 10.9, "note": "洗脸巾", "acct": "大号"}, {"id": "f-25", "date": "2026-10-11", "cat": "food", "amount": 26, "note": "晚饭", "acct": "大号"}, {"id": "f-26", "date": "2026-10-11", "cat": "food", "amount": 23, "note": "中饭", "acct": "大号"}, {"id": "f-27", "date": "2026-10-12", "cat": "food", "amount": 40, "note": "晚饭", "acct": "大号"}, {"id": "f-28", "date": "2026-10-13", "cat": "food", "amount": 30, "note": "中饭", "acct": "大号"}, {"id": "f-29", "date": "2026-10-13", "cat": "trans", "amount": 8, "note": "地铁", "acct": "支付宝"}, {"id": "f-30", "date": "2026-10-13", "cat": "drink", "amount": 14, "note": "零食", "acct": "大号"}, {"id": "f-31", "date": "2026-10-14", "cat": "food", "amount": 25, "note": "中饭", "acct": "大号"}, {"id": "f-32", "date": "2026-10-14", "cat": "food", "amount": 25, "note": "晚饭", "acct": "大号"}, {"id": "f-33", "date": "2026-10-15", "cat": "phone", "amount": 50, "note": "话费", "acct": "大号"}, {"id": "f-34", "date": "2026-10-15", "cat": "food", "amount": 20, "note": "中饭", "acct": "大号"}, {"id": "f-35", "date": "2026-10-15", "cat": "trans", "amount": 10, "note": "地铁", "acct": "支付宝"}, {"id": "f-36", "date": "2026-10-15", "cat": "trans", "amount": 15, "note": "共享单车骑行卡", "acct": "大号"}, {"id": "f-37", "date": "2026-10-15", "cat": "food", "amount": 30, "note": "晚饭", "acct": "大号"}, {"id": "f-38", "date": "2026-10-15", "cat": "trans", "amount": 10, "note": "地铁", "acct": "支付宝"}, {"id": "f-39", "date": "2026-10-15", "cat": "ai", "amount": 100, "note": "氪AI token", "acct": "大号"}, {"id": "f-40", "date": "2026-10-16", "cat": "food", "amount": 5, "note": "早饭", "acct": "大号"}, {"id": "f-41", "date": "2026-10-16", "cat": "food", "amount": 17, "note": "中饭", "acct": "大号"}, {"id": "f-42", "date": "2026-10-16", "cat": "drink", "amount": 9, "note": "买水", "acct": "大号"}], "budgets": {"food": 1500, "fun": 450, "ai": 200, "trans": 220, "daily": 180, "drink": 150, "phone": 100, "misc": 100}, "fixed": [], "income": [{"date": "2026-10-03", "amount": 110, "note": "晚上赚的"}, {"date": "2026-10-03", "amount": 90, "note": "晚上赚的"}], "balances": {"items": [{"name": "微信小号", "amount": 144}, {"name": "支付宝", "amount": 0}, {"name": "微信大号", "amount": 3456}], "updated": "2026-10-03", "note": "支付宝平时0，坐地铁才转钱"}}</script>
 
 <script>
 const CATS = [
@@ -201,36 +199,12 @@ function initMonthSel(){
 }
 function curMonth(){ return document.getElementById("monthSel").value; }
 
-// ---------- 记账（本机临时） ----------
-function addEntry(){
-  const amtEl = document.getElementById("amt");
-  const v = parseFloat(amtEl.value);
-  if (!(v>0)) { amtEl.focus(); return; }
-  const now = new Date();
-  const date = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
-  localEntries.push({id:"l-"+Date.now(), date, cat:document.getElementById("cat").value, amount:Math.round(v*100)/100, note:document.getElementById("note").value.trim()});
-  saveLocal();
-  amtEl.value=""; document.getElementById("note").value="";
-  amtEl.focus();
-  const em = date.slice(0,7), sel = document.getElementById("monthSel");
-  if (![...sel.options].some(o=>o.value===em)) {
-    const [y,m] = em.split("-");
-    const o=document.createElement("option"); o.value=em; o.textContent=`${y}年${parseInt(m)}月`;
-    sel.insertBefore(o, sel.firstChild);
-  }
-  sel.value = em;
-  render();
-}
-document.getElementById("add").addEventListener("click", addEntry);
-document.getElementById("amt").addEventListener("keydown", e=>{ if(e.key==="Enter") addEntry(); });
-document.getElementById("note").addEventListener("keydown", e=>{ if(e.key==="Enter") addEntry(); });
-
 // ---------- 删除 ----------
 function delEntry(id){
+  if (!id.startsWith("l-")) { alert("正式账在微信喊本鱼删除"); return; }
   if (!confirm("删除这一笔？")) return;
-  if (id.startsWith("l-")) localEntries = localEntries.filter(e=>e.id!==id);
-  if (!hiddenIds.includes(id)) hiddenIds.push(id);
-  saveLocal(); saveHidden(); render();
+  localEntries = localEntries.filter(e=>e.id!==id);
+  saveLocal(); render();
 }
 
 // ---------- 汇总 ----------
@@ -271,7 +245,7 @@ function drawPie(t){
 function renderLegend(t){
   const total = Object.values(t).reduce((a,b)=>a+b,0);
   const el = document.getElementById("legend");
-  if (total<=0) { el.innerHTML = '<span style="color:#a5abb8">记一笔试试 →</span>'; return; }
+  if (total<=0) { el.innerHTML = '<span style="color:#a5abb8">记账在微信喊本鱼 🐟</span>'; return; }
   const sorted = CATS.filter(c=>t[c.id]>0).sort((a,b)=>t[b.id]-t[a.id]);
   el.innerHTML = sorted.map(c=>{
     const p = (t[c.id]/total*100);
@@ -316,6 +290,9 @@ function renderBudgets(t, mo){
   const sl = document.getElementById("saveLine");
   sl.textContent = `本月已花 ¥${spent.toFixed(1)} / 总预算 ¥${totalBudget}，照这个节奏月底能攒 ¥${Math.max(0,totalBudget-spent).toFixed(0)}（目标 ≥600）`;
   sl.style.color = (totalBudget-spent) < 600 && mo === curMonth() ? "#b00020" : "#6b7280";
+  // 移除上次的收入/余额条，防止重复叠加
+  const oldTip = sl.nextElementSibling;
+  if (oldTip && oldTip.dataset.tip === "1") oldTip.remove();
   // 收入条
   const inc = (FILE_DATA.income||[]).filter(e=>e.date.startsWith(mo));
   // 账户余额条
@@ -324,6 +301,7 @@ function renderBudgets(t, mo){
     const total = bal.items.reduce((a,b)=>a+b.amount,0);
     const tip = document.createElement("div");
     tip.style.cssText = "margin-top:12px;padding-top:10px;border-top:1px dashed #e3e6ee;font-size:12.5px;color:#5a6270;line-height:1.9;";
+    tip.dataset.tip = "1";
     const incHtml = inc.length ? `💵 <b>本月额外收入</b>：` + inc.map(x=>`${x.date.slice(5)} +¥${x.amount.toFixed(0)}（${x.note}）`).join(" · ") + `，合计 <b style="color:#1e8e3e">+¥${inc.reduce((a,b)=>a+b.amount,0).toFixed(0)}</b><br>` : "";
     tip.innerHTML = incHtml +
       `💰 <b>账户余额</b>（${bal.updated} 更新，合计 <b>¥${total.toFixed(0)}</b>）：` +
@@ -361,7 +339,7 @@ function openSettings(){
   box.innerHTML = CATS.map(c=>`<div class="setrow"><span>${c.icon} ${c.name}</span><input type="number" min="0" step="10" id="set_${c.id}" value="${budgetOf(c.id)}"></div>`).join("");
   dlg.showModal();
 }
-document.getElementById("openSettings").addEventListener("click", openSettings);
+document.getElementById("openSettings")?.addEventListener("click", openSettings);
 document.getElementById("cancelSettings").addEventListener("click", ()=>document.getElementById("settingsDlg").close());
 document.getElementById("saveSettings").addEventListener("click", ()=>{
   CATS.forEach(c=>{
@@ -425,12 +403,6 @@ function render(){
 
 // ---------- init ----------
 (function init(){
-  const sel = document.getElementById("cat");
-  CATS.forEach(c=>{
-    const o = document.createElement("option");
-    o.value = c.id; o.textContent = `${c.icon} ${c.name}`;
-    sel.appendChild(o);
-  });
   autoFixed();
   initMonthSel();
   render();

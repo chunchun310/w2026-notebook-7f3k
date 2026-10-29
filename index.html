@@ -278,7 +278,7 @@ function renderBudgets(t, mo){
     const _now = new Date();
     const _days = new Date(_now.getFullYear(), _now.getMonth()+1, 0).getDate();
     const _timePct = _now.getDate()/_days*100;
-    const tier = (mo !== curMonth()) ? null : (pct >= 1.02 ? "red" : (pct*100 > _timePct + 5 ? "orange" : null));
+    const tier = (mo !== curMonth()) ? null : (pct >= 1.02 ? "red" : (pct*100 > _timePct + 10 ? "orange" : null));
     if (tier) alerts.push({c, tier, pct});
     const cls = tier==="red" ? "over" : tier==="orange" ? "warn80" : tier==="yellow" ? "warn50" : "";
     const row = document.createElement("div");

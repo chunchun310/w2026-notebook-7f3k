@@ -80,7 +80,7 @@ canvas.ring { width:96px; height:96px; }
 <body>
 <div class="container">
   <h1>📒 记账本</h1>
-  <div class="subtitle">本页只做看账：流水明细 · 月度占比 · 预算进度（记账在微信喊本鱼，实时更新到这里）</div>
+  <div class="subtitle">流水明细 · 月度占比 · 预算进度</div>
   <div class="banners">
     <div id="banner" class="banner"></div>
   </div>
@@ -94,7 +94,7 @@ canvas.ring { width:96px; height:96px; }
 
   <div class="cards">
     <div class="card">
-      <h2>📜 流水明细 <span style="font-size:12px;color:#a5abb8;font-weight:normal">（记账在微信喊本鱼）</span></h2>
+      <h2>📜 流水明细</h2>
       <div class="summaryline" id="summary"></div>
       <div class="monthsel">月份 <select id="monthSel"></select></div>
       <div class="history" id="history"></div>
@@ -112,7 +112,7 @@ canvas.ring { width:96px; height:96px; }
         <h2>📊 预算进度</h2>
         <div class="budgetlist" id="budgets"></div>
         <div class="summaryline" style="margin-top:10px;" id="saveLine"></div>
-        <div class="tip">💡 50% 黄 · 80% 橙 · 100% 红。想永久改预算/记固定支出，在微信跟本鱼说。</div>
+        <div class="tip">💡 50% 黄 · 80% 橙 · 100% 红。</div>
       </div>
     </div>
   </div>
@@ -121,7 +121,7 @@ canvas.ring { width:96px; height:96px; }
 </div>
 
 <dialog id="settingsDlg">
-  <h3>月预算设置（临时预览，永久修改找本鱼）</h3>
+  <h3>月预算设置</h3>
   <div id="setRows"></div>
   <div class="formrow" style="margin-top:10px;">
     <button class="btn ghost" id="cancelSettings">取消</button>
@@ -204,7 +204,7 @@ function curMonth(){ return document.getElementById("monthSel").value; }
 
 // ---------- 删除 ----------
 function delEntry(id){
-  if (!id.startsWith("l-")) { alert("正式账在微信喊本鱼删除"); return; }
+  if (!id.startsWith("l-")) { alert("正式账不能在这里删"); return; }
   if (!confirm("删除这一笔？")) return;
   localEntries = localEntries.filter(e=>e.id!==id);
   saveLocal(); render();
@@ -248,7 +248,7 @@ function drawPie(t){
 function renderLegend(t){
   const total = Object.values(t).reduce((a,b)=>a+b,0);
   const el = document.getElementById("legend");
-  if (total<=0) { el.innerHTML = '<span style="color:#a5abb8">记账在微信喊本鱼 🐟</span>'; return; }
+  if (total<=0) { el.innerHTML = '<span style="color:#a5abb8">本月暂无记录</span>'; return; }
   const sorted = CATS.filter(c=>t[c.id]>0).sort((a,b)=>t[b.id]-t[a.id]);
   el.innerHTML = sorted.map(c=>{
     const p = (t[c.id]/total*100);

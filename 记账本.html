@@ -19,9 +19,9 @@ h1 { font-size:22px; margin-bottom:4px; }
 .banner.yellow { background:#fff7e0; color:#8a6100; border:1px solid #f0d060; }
 .banner.orange { background:#ffefd9; color:#9a4d00; border:1px solid #f0a860; }
 .banner.red { background:#ffe5e5; color:#b00020; border:1px solid #ff8a8a; }
-.cards { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-@media (max-width:700px){ .cards{grid-template-columns:1fr;} }
-.card { background:#fff; border-radius:14px; padding:16px; box-shadow:0 2px 10px rgba(30,40,80,.06); }
+.cards { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; }
+@media (max-width:700px){ .cards{grid-template-columns:minmax(0,1fr);} }
+.card { background:#fff; border-radius:14px; padding:16px; box-shadow:0 2px 10px rgba(30,40,80,.06); min-width:0; overflow:hidden; }
 .card h2 { font-size:15px; margin-bottom:12px; color:#3a4150; }
 .formrow { display:flex; gap:8px; margin-bottom:10px; }
 input,select { flex:1; padding:9px 10px; border:1px solid #d8dce6; border-radius:9px; font-size:15px; background:#fafbfe; min-width:0; }
@@ -273,7 +273,11 @@ function renderBudgets(t, mo){
       return;
     }
     const pct = b>0 ? used/b : 0;
-    const tier = tierOf(pct);
+    // 只有「真的花了超过时间进度」才报警，避免月中一片红
+    const _now = new Date();
+    const _days = new Date(_now.getFullYear(), _now.getMonth()+1, 0).getDate();
+    const _timePct = _now.getDate()/_days*100;
+    const tier = (mo !== curMonth()) ? null : (pct >= 1 ? "red" : (pct*100 > _timePct + 5 ? "orange" : null));
     if (tier) alerts.push({c, tier, pct});
     const cls = tier==="red" ? "over" : tier==="orange" ? "warn80" : tier==="yellow" ? "warn50" : "";
     const row = document.createElement("div");
@@ -302,7 +306,7 @@ function renderBudgets(t, mo){
   const totalBudget = CATS.filter(c=>c.id!=="travel").reduce((a,c)=>a+budgetOf(c.id),0);
   const sl = document.getElementById("saveLine");
   const left = Math.max(0,totalBudget-dailySpent2);
-  sl.textContent = `日常已花 ¥${dailySpent2.toFixed(1)} / 日常预算 ¥${totalBudget}，还剩 ¥${left.toFixed(0)} · 旅游 ¥${travelSpent.toFixed(0)} 另算 · 全月合计 ¥${spent.toFixed(0)}`;
+  sl.textContent = `日常已花 ¥${dailySpent2.toFixed(1)} / 预算 ¥${totalBudget}，还剩 ¥${left.toFixed(0)} 额度（额度 ≠ 手里的钱）· 旅游 ¥${travelSpent.toFixed(0)} 另算 · 全月合计 ¥${spent.toFixed(0)}`;
   sl.style.color = left < 600 && mo === curMonth() ? "#b00020" : "#6b7280";
   // 移除上次的收入/余额条，防止重复叠加
   const oldTip = sl.nextElementSibling;
@@ -385,18 +389,22 @@ function renderHero(t, mo){
   const balSum = balItems.reduce((a,b)=>a+(+b.amount||0),0);
 
   document.getElementById("heroBig").textContent = "¥" + Math.round(balSum);
+  const balTxt = balItems.map(b=>`${b.name} ¥${(+b.amount).toFixed(b.amount%1?2:0)}`).join(" ＋ ");
   document.getElementById("heroSub").textContent =
-    `${balItems.length} 个账户合计（${bal.updated||"-"} 更新）· 日常预算 ¥${dailyBudget}，已用 ¥${dailySpent.toFixed(0)}，还剩 ¥${Math.round(canSpend)} · 旅游 ¥${travel.toFixed(0)} 单列，不占日常预算`;
+    `${balTxt}（${bal.updated||"-"} 更新）`;
 
   const normalDays = new Set(monthEntries(mo).filter(e=>e.cat!=="travel").map(e=>e.date)).size || day;
   // 只有「天天会发生」的四类才摊到每天：吃饭/聚餐/咖啡零食/交通
   const dayCats = ["food","dinner","drink","trans"];
   const daySpend = dayCats.reduce((a,k)=>a+(t[k]||0),0);
   const avgDaily = daySpend / normalDays;
+  // 月底预计余额 = 现在手上的钱 − 剩下几天按日常节奏还要花的钱
+  const willSpend = avgDaily * daysLeft;
+  const endCash = balSum - willSpend;
   const gauges = [
-    {label:"🎁 日常还能花", val:`¥${Math.round(canSpend)}`, pct: Math.max(0,100-dailyUsedPct), note:`剩 ${daysLeft} 天，每天还能 ¥${Math.round(canSpend/daysLeft)}`},
-    {label:"🔥 日常预算已用", val:`${dailyUsedPct.toFixed(0)}%`, pct: Math.min(dailyUsedPct,100), note: dailyUsedPct > timePct+10 ? `⚠️ 比时间跑快 ${Math.round(dailyUsedPct-timePct)}%` : `时间过了 ${Math.round(timePct)}%，节奏正常`},
-    {label:"📈 吃饭交通日均", val:`¥${Math.round(avgDaily)}`, pct: Math.min(avgDaily/300*100,100), note:`吃饭+聚餐+咖啡+交通，${normalDays} 天共 ¥${daySpend.toFixed(0)}；AI、水电按月算不摊每天`},
+    {label:"🎯 月底预计还剩", val:`¥${Math.round(endCash)}`, pct: balSum>0 ? Math.max(0,Math.min(endCash/balSum*100,100)) : 0, note:`现在 ¥${Math.round(balSum)} − 剩 ${daysLeft} 天 × 每天 ¥${Math.round(avgDaily)}`},
+    {label:"💸 这个月已经花了", val:`¥${Math.round(spent)}`, pct: Math.min(spent/(dailyBudget+travel)*100,100), note:`日常 ¥${dailySpent.toFixed(0)} ＋ 旅游 ¥${travel.toFixed(0)}`},
+    {label:"📊 日常预算用了", val:`${dailyUsedPct.toFixed(0)}%`, pct: Math.min(dailyUsedPct,100), note:`预算 ¥${dailyBudget} 是标尺，不是余额；还剩 ¥${Math.round(canSpend)} 额度`},
   ];
   document.getElementById("gauges").innerHTML = gauges.map(g=>`
     <div class="gauge">

@@ -389,11 +389,14 @@ function renderHero(t, mo){
     `${balItems.length} 个账户合计（${bal.updated||"-"} 更新）· 日常预算 ¥${dailyBudget}，已用 ¥${dailySpent.toFixed(0)}，还剩 ¥${Math.round(canSpend)} · 旅游 ¥${travel.toFixed(0)} 单列，不占日常预算`;
 
   const normalDays = new Set(monthEntries(mo).filter(e=>e.cat!=="travel").map(e=>e.date)).size || day;
-  const avgDaily = dailySpent / normalDays;
+  // 只有「天天会发生」的四类才摊到每天：吃饭/聚餐/咖啡零食/交通
+  const dayCats = ["food","dinner","drink","trans"];
+  const daySpend = dayCats.reduce((a,k)=>a+(t[k]||0),0);
+  const avgDaily = daySpend / normalDays;
   const gauges = [
     {label:"🎁 日常还能花", val:`¥${Math.round(canSpend)}`, pct: Math.max(0,100-dailyUsedPct), note:`剩 ${daysLeft} 天，每天还能 ¥${Math.round(canSpend/daysLeft)}`},
     {label:"🔥 日常预算已用", val:`${dailyUsedPct.toFixed(0)}%`, pct: Math.min(dailyUsedPct,100), note: dailyUsedPct > timePct+10 ? `⚠️ 比时间跑快 ${Math.round(dailyUsedPct-timePct)}%` : `时间过了 ${Math.round(timePct)}%，节奏正常`},
-    {label:"📈 正常日日均", val:`¥${Math.round(avgDaily)}`, pct: Math.min(avgDaily/300*100,100), note:`${normalDays} 个正常日共 ¥${dailySpent.toFixed(0)}（旅游日不算）`},
+    {label:"📈 吃饭交通日均", val:`¥${Math.round(avgDaily)}`, pct: Math.min(avgDaily/300*100,100), note:`吃饭+聚餐+咖啡+交通，${normalDays} 天共 ¥${daySpend.toFixed(0)}；AI、水电按月算不摊每天`},
   ];
   document.getElementById("gauges").innerHTML = gauges.map(g=>`
     <div class="gauge">
